@@ -62,6 +62,7 @@ class Mollom(object):
         for attempt in xrange(0, self._attempts):
             try:
                 response = self._client.post(url, data, timeout=self._timeout)
+                break
             except Timeout:
                 if attempt + 1 == self._attempts:
                     # If this is the last attempt and we're still not successful, raise an exception
