@@ -36,7 +36,6 @@ class Mollom(object):
             A subsequent request should usually succeed because of the global load balancer.
         """
         self._public_key = public_key
-        self._private_key = private_key
         self._rest_root = rest_root
         
         self._timeout = timeout
@@ -230,3 +229,60 @@ class Mollom(object):
         data = {"contentId": content_id, "reason": reason}
         
         self.__post_request(url, data)
+        
+    def create_blacklist_entry(self, 
+                               value, 
+                               reason="unwanted", 
+                               context="allFields", 
+                               exact_match = False, 
+                               enabled = True
+                               ):
+        """Creates a new blacklist entry.
+        
+        Keyword arguments:
+        value -- The string value to blacklist.
+        reason -- The reason for why the value is blacklisted. Can be: "spam", "unwanted".
+        context -- The context where the entry's value may match. Can be:
+            allFields -- Match can be made in any field.
+            author -- Match can be made in any author related field.
+            authorName -- Match can be made in the author name of the content.
+            authorMail -- Match can be made in the author email of the content.
+            authorIp -- Match can be made in the author ip address of the content.
+            authorId -- Match can be made in the author id of the content.
+            links -- Match can be made in any of the links of the content.
+            postTitle -- Match can be made in the post title of the content.
+            post -- Match can be made in the post title or the post body of the content.
+        exact_match -- Whether there has to be an exact word match. Can be: "exact", "contains".
+            e.g. for a value of "call", "caller" would be a contains match, but not an exact match.
+        enabled -- Whether or not this blacklist entry is enabled.
+        
+        Returns:
+        blacklist_entry_id -- The unique identifier of the blacklist entry created.
+        """
+        create_blacklist_endpoint = Template("${rest_root}/blacklist/${public_key}")
+        url = create_blacklist_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key)
+        
+        data = {"value": value,
+                "reason": reason,
+                "context": context,
+                "match": "exact" if exact_match else "contains",
+                "status": 1 if enabled else 0
+                }
+        
+        response = self.__post_request(url, data)
+        return response["entry"]["id"]
+    def delete_blacklist_entry(self, blacklist_entry_id):
+        """Delete an existing blacklist entry.
+        
+        Keyword arguments:
+        blacklist_entry_id -- The unique identifier of the blacklist entry to delete.
+        """
+        delete_blacklist_endpoint = Template("${rest_root}/blacklist/${public_key}/${blacklist_entry_id}/delete")
+        url = delete_blacklist_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key, blacklist_entry_id=blacklist_entry_id)
+        
+        self.__post_request(url, {})
+        
+    def get_blacklist_entry(self, blacklist_entry_id):
+        """
+        
+        """
