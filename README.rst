@@ -13,7 +13,7 @@ These requirements can be installed by doing
 
 ::
 
-    pip install -r requirements.txt
+    pip install mollom
 
 Example Usage
 -------------
