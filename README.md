@@ -8,7 +8,7 @@ A python client library for the [Mollom REST API](https://mollom.com/api).
 
 These requirements can be installed by doing 
 ```
-pip install -r requirements.txt
+pip -e .
 ```
 
 ## Example Usage
