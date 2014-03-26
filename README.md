@@ -13,7 +13,7 @@ pip install mollom
 
 ## Example Usage
 ```python
-from mollom_python import Mollom
+from mollom import Mollom
 public_key = {public_key}
 private_key = {private_key}
 mollom_client = Mollom(public_key, private_key)
@@ -50,7 +50,7 @@ except (MollomConnectionError):
 ## Sending feedback
 Sometimes, Mollom makes mistakes. When this happens, send feedback so that Mollom can learn from its mistakes.
 ```python
-from mollom_python import Mollom
+from mollom import Mollom
 public_key = {public_key}
 private_key = {private_key}
 mollom_client = Mollom(public_key, private_key)

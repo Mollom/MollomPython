@@ -20,7 +20,7 @@ Example Usage
 
 .. code:: python
 
-    from mollom_python import Mollom
+    from mollom import Mollom
     public_key = {public_key}
     private_key = {private_key}
     mollom_client = Mollom(public_key, private_key)
@@ -61,7 +61,7 @@ that Mollom can learn from its mistakes.
 
 .. code:: python
 
-    from mollom_python import Mollom
+    from mollom import Mollom
     public_key = {public_key}
     private_key = {private_key}
     mollom_client = Mollom(public_key, private_key)

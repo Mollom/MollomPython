@@ -42,7 +42,6 @@ class Mollom(object):
         self._attempts = attempts
         
         self._client = OAuth1Session(client_key=public_key, client_secret=private_key)
-        self._client.headers["Content-Type"] = "application/x-www-form-urlencoded"
         self._client.headers["Accept"] = "application/json"
         
         self.__verify_keys()
@@ -53,12 +52,16 @@ class Mollom(object):
         url = verify_keys_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key)
         
         data = { "clientName": "mollom_python", "clientVersion": "1.0" }
-        
+
+        self._client.headers["Content-Type"] = "application/x-www-form-urlencoded"
+
         response = self._client.post(url, data, timeout=self._timeout)
         if response.status_code != 200:
             raise MollomAuthenticationError
         
     def __post_request(self, url, data):
+        self._client.headers["Content-Type"] = "application/x-www-form-urlencoded"
+
         for attempt in xrange(0, self._attempts):
             try:
                 response = self._client.post(url, data, timeout=self._timeout)
@@ -74,7 +77,26 @@ class Mollom(object):
             raise MollomInvalidRequestError(response.text)
         else:
             raise MollomUnexpectedResponseError(response.text)
-        
+
+    def __get_request(self, url):
+        self._client.headers.pop("Content-Type", None)
+
+        for attempt in xrange(0, self._attempts):
+            try:
+                response = self._client.get(url, timeout=self._timeout)
+                break
+            except Timeout:
+                if attempt + 1 == self._attempts:
+                    # If this is the last attempt and we're still not successful, raise an exception
+                    raise MollomConnectionError
+
+        if response.status_code >= 200 and response.status_code < 300:
+            return response.json()
+        elif response.status_code >= 400 and response.status_code < 500:
+            raise MollomInvalidRequestError(response.text)
+        else:
+            raise MollomUnexpectedResponseError(response.text)
+
     def check_content(self, 
                       content_id=None,
                       post_title=None, 
@@ -272,6 +294,7 @@ class Mollom(object):
         
         response = self.__post_request(url, data)
         return response["entry"]["id"]
+
     def delete_blacklist_entry(self, blacklist_entry_id):
         """Delete an existing blacklist entry.
         
@@ -282,8 +305,25 @@ class Mollom(object):
         url = delete_blacklist_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key, blacklist_entry_id=blacklist_entry_id)
         
         self.__post_request(url, {})
-        
+
+    def get_blacklist_entries(self):
+        """Get a list of all blacklist entries.
+
+        """
+        get_blacklist_entries_endpoint = Template("${rest_root}/blacklist/${public_key}/")
+        url = get_blacklist_entries_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key)
+
+        response = self.__get_request(url)
+        return response["list"]["entry"]
+
     def get_blacklist_entry(self, blacklist_entry_id):
+        """Get a single blacklist entry
+
+        Keyword arguments:
+        blacklist_entry_id -- The unique identifier of the blacklist entry to get.
         """
-        
-        """
+        get_blacklist_entries_endpoint = Template("${rest_root}/blacklist/${public_key}/${blacklist_entry_id}")
+        url = get_blacklist_entries_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key, blacklist_entry_id=blacklist_entry_id)
+
+        response = self.__get_request(url)
+        return response["entry"]
