@@ -235,20 +235,51 @@ class Mollom(object):
         # Mollom returns "1" for success and "0" for failure
         return response["captcha"]["solved"] == "1"
         
-    def send_feedback(self, content_id, reason):
+    def send_feedback(
+        self,
+        reason,
+        type=None,
+        author_ip=None,
+        author_id=None,
+        author_open_id=None,
+        content_id=None,
+        captcha_id=None,
+        source=None
+        ):
         """Sends feedback to Mollom in the case of false negative or false positives. 
         
         Keyword arguments:
-        content_id -- Unique identifier of the content to submit feedback about.
         reason -- Feedback to give. Can be: "approve", "spam", "unwanted".
             "approve" -- Report a false positive (legitimate content that was incorrectly classified as spam).
             "spam" -- Report a false negative (spam that was incorrectly classified as ham).
             "unwanted" -- Report content that isn't spam, but still unwanted on the site (e.g. offensive, profane, etc)
+        type -- A string denoting the type of feedback submitted: flag for end users flagging content to submit feedback; moderate for administrative moderation. Can be "flag" or "moderate". Defaults to "moderate".
+        author_ip -- The IP address of the content author.
+        author_id -- The local user ID on the client site of the content author.
+        author_open_id -- Open IDs of the content author, separated by whitespace.
+        content_id -- Existing content ID.
+        captcha_id -- Existing CAPTCHA ID.
+        source -- A single word string identifier for the user interface source. This is tracked along with the feedback to provide a more complete picture of how feedback is used and submitted on the site.
         """
         send_feedback_endpoint = Template("${rest_root}/feedback")
         url = send_feedback_endpoint.substitute(rest_root=self._rest_root)
         
         data = {"contentId": content_id, "reason": reason}
+
+        if type:
+            data["type"] = type
+        if author_ip:
+            data["authorIp"] = author_ip
+        if author_id:
+            data["authorId"] = author_id
+        if author_open_id:
+            data["authorOpenId"] = author_open_id
+        if content_id:
+            data["contentId"] = content_id
+        if captcha_id:
+            data["captchaId"] = captcha_id
+        if source:
+            data["source"] = source
         
         self.__post_request(url, data)
         
