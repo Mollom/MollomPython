@@ -172,8 +172,7 @@ class Mollom(object):
         if honeypot:
             data["honeypot"] = honeypot
             
-        response = self.__post_request(url, data)
-        return response["content"]["id"], response["content"]["spamClassification"]
+        return self.__post_request(url, data)
     
     def create_captcha(self, captcha_type="image", ssl=None, content_id=None):
         """Creates a CAPTCHA to be served to the end-user.
