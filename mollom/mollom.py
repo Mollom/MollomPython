@@ -44,9 +44,7 @@ class Mollom(object):
         self._client = OAuth1Session(client_key=public_key, client_secret=private_key)
         self._client.headers["Accept"] = "application/json"
         
-        self.__verify_keys()
-        
-    def __verify_keys(self):
+    def verify_keys(self):
         """Verify that the public and private key combination is valid; raises MollomAuthenticationError otherwise"""
         verify_keys_endpoint = Template("${rest_root}/site/${public_key}")
         url = verify_keys_endpoint.substitute(rest_root=self._rest_root, public_key=self._public_key)
@@ -58,6 +56,8 @@ class Mollom(object):
         response = self._client.post(url, data, timeout=self._timeout)
         if response.status_code != 200:
             raise MollomAuthenticationError
+
+        return True
         
     def __post_request(self, url, data):
         self._client.headers["Content-Type"] = "application/x-www-form-urlencoded"
