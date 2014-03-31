@@ -23,7 +23,10 @@ try:
   post_body = {post_body}
   author_id = {author_id}
   author_ip = {author_ip}
-  content_id, spam_classification = mollom_client.check_content(post_title=post_title, post_body=post_body, author_id=author_id, author_ip=author_ip)
+  result = mollom_client.check_content(post_title=post_title, post_body=post_body, author_id=author_id, author_ip=author_ip)
+
+  spam_classification = result['content']['spamClassification']
+  contentId = result['content']['id']
   
   if spam_classification == "ham":
     # Accept the content
