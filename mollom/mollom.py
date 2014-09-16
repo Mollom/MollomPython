@@ -1,4 +1,6 @@
 from string import Template
+import datetime
+import calendar
 from requests_oauthlib import OAuth1Session
 from requests.exceptions import Timeout
 
@@ -107,6 +109,7 @@ class Mollom(object):
                       author_ip=None, 
                       author_id=None, 
                       author_open_id=None,
+                      author_created=None,
                       allow_unsure=None,
                       strictness=None,
                       content_type=None,
@@ -129,6 +132,8 @@ class Mollom(object):
         author_ip -- The IP address of the content author.
         author_id -- The local user ID on the client site of the content author.
         author_open_id -- List of Open IDs of the content author.
+        author_created -- When the author's account was created.
+            Can be raw UNIX timestamp, or a Python date or datetime (in UTC).
         allow_unsure -- If false, Mollom will only return ham or spam. Defaults to true.
         strictness -- A string denoting the strictness of Mollom checks to perform. 
             Can be "strict", "normal" or "relaxed". Defaults to "normal".
@@ -163,6 +168,11 @@ class Mollom(object):
             data["authorId"] = author_id
         if author_open_id:
             data["authorOpenId"] = " ".join(author_open_id)
+        if author_created:
+            if isinstance(author_created, datetime.date):  # and datetime.datetime is a subclass of datetime.date
+                data["authorCreated"] = calendar.timegm(author_created.timetuple())
+            else:
+                data["authorCreated"] = author_created
         if allow_unsure:
             data["unsure"] = 1 if allow_unsure else 0
         if strictness:
